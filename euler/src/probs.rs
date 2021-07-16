@@ -1,6 +1,7 @@
 use bit_vec::BitVec;
 use num_bigint::{BigUint, ToBigUint};
 use num_traits::Zero;
+use std::collections::HashSet;
 
 pub fn prob1() -> usize
 {
@@ -401,4 +402,57 @@ pub fn prob12() -> usize
 
         i += 1;
     }
+}
+
+pub fn prob53() -> usize
+{
+    let mut i: usize = 1;
+    loop
+    {
+        let mut dl = dig_list(i); 
+    }
+}
+
+pub fn combs(v: &Vec<usize>, n: usize) -> Vec<Vec<usize>>
+{
+    fn inner(v: &Vec<usize>, n: usize, skip: Vec<usize>) -> Vec<Vec<usize>>
+    {
+        let mut res: Vec<Vec<usize>> = Vec::new();
+
+        if n == 1
+        {
+            for &i in v 
+            {
+                if !skip.iter().any(|&x| x == i)
+                {
+                    res.push(vec![i]);
+                }
+            }
+        }
+        else
+        {
+            for i in (0..v.len()).rev()
+            {
+                if !skip.iter().any(|&x| x == i)
+                {
+                    let mut nv = skip.clone();
+                    nv.push(i);
+                    for k in 0..i
+                    {
+                        nv.push(k);
+                    }
+                    let nr = inner(&v, n-1, nv);
+                    let nr: Vec<Vec<usize>> = nr.into_iter().map(|mut x| { x.push(v[i]); x }).collect();
+                    for j in nr
+                    {
+                        res.push(j); 
+                    }
+                }
+            }
+        }
+
+        res 
+    }
+
+    inner(&v, n, vec![])
 }
