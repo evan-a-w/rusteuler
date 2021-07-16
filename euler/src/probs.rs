@@ -1,4 +1,5 @@
 use math::round;
+use bitvec::prelude::*;
 
 pub fn prob1() -> usize
 {
@@ -42,18 +43,24 @@ pub fn prob2() -> usize
     fib.into_iter().filter(|x| x % 2 == 0).sum()
 }
 
+pub fn naiive_prime_test(n : usize) -> bool
+{
+    (2..((n as f64).sqrt().ceil() as usize) + 1).all(|x| n % x != 0)
+}
+
 pub fn prime_factors(n : usize) -> Vec<usize>
 {
     let mut res : Vec<usize> = Vec::new();
-    let go = ||
+    let mut s : usize = 2;
+    loop
     {
-        let mut ex : bool = false;
-        for i in 1..((n as f64).sqrt().ceil() as usize)
+        for i in s..((n as f64).sqrt().ceil() as usize)
         {
             if n % i == 0
             {
                 res.push(i);
                 n /= i;
+                s = i + 1;
                 ex = true;
             }
             if ex
@@ -61,9 +68,7 @@ pub fn prime_factors(n : usize) -> Vec<usize>
                 break;
             }
         }
-        if ex
-        {
-
-        }
     }
+
+    res
 }

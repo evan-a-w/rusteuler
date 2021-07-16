@@ -2,5 +2,5 @@ mod probs;
 
 fn main() 
 {
-    println!("{}", probs::prob2());
+    println!("{}", vec![2, 3, 21, 44, 103].map(|x| probs::naiive_prime_test(x));
 }
