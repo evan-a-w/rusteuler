@@ -413,46 +413,37 @@ pub fn prob53() -> usize
     }
 }
 
-pub fn combs(v: &Vec<usize>, n: usize) -> Vec<Vec<usize>>
+pub fn combs<T: Copy + Eq>(v: &Vec<T>, n: usize) -> Vec<Vec<T>>
 {
-    fn inner(v: &Vec<usize>, n: usize, skip: Vec<usize>) -> Vec<Vec<usize>>
+    let mut res: Vec<Vec<T>> = Vec::new();
+    if n == 1
     {
-        let mut res: Vec<Vec<usize>> = Vec::new();
-
-        if n == 1
+        for &i in v
         {
-            for &i in v 
+            res.push(vec![i]);
+        }
+    }
+    else if v.len() == n
+    {
+        res.push(v.clone());
+    }
+    else if v.len() > n
+    {
+        for i in 0..v.len()
+        {
+            let mut tv: Vec<T> = Vec::new();
+            for j in (i+1)..v.len()
             {
-                if !skip.iter().any(|&x| x == i)
-                {
-                    res.push(vec![i]);
-                }
+                tv.push(v[j]);
+            }
+            let nr: Vec<Vec<T>> = combs(&tv, n-1);
+            for mut x in nr
+            {
+                x.push(v[i]);
+                res.push(x);
             }
         }
-        else
-        {
-            for i in (0..v.len()).rev()
-            {
-                if !skip.iter().any(|&x| x == i)
-                {
-                    let mut nv = skip.clone();
-                    nv.push(i);
-                    for k in 0..i
-                    {
-                        nv.push(k);
-                    }
-                    let nr = inner(&v, n-1, nv);
-                    let nr: Vec<Vec<usize>> = nr.into_iter().map(|mut x| { x.push(v[i]); x }).collect();
-                    for j in nr
-                    {
-                        res.push(j); 
-                    }
-                }
-            }
-        }
-
-        res 
     }
 
-    inner(&v, n, vec![])
+    res
 }
