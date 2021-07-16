@@ -2,5 +2,5 @@ mod probs;
 
 fn main() 
 {
-    println!("{}", probs::prob10());
+    println!("{}", probs::prob12());
 }

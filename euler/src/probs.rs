@@ -368,3 +368,37 @@ pub fn dig_listu32(mut n : usize) -> Vec<u32>
 
     res
 }
+
+pub fn factors(n : usize) -> Vec<usize>
+{
+    let mut res : Vec<usize> = vec![1];
+
+    for i in 2..((n as f64).sqrt() as usize)
+    {
+        if n % i == 0
+        {
+            res.push(i);
+            res.push(n / i);
+        }
+    }
+
+    res.push(n);
+    res
+}
+
+pub fn prob12() -> usize
+{
+    let mut i = 1;
+    loop
+    {
+        let n : usize = (i*(i+1))/2; 
+        let fs = factors(n);
+
+        if fs.len() > 500
+        {
+            return n;
+        }
+
+        i += 1;
+    }
+}
