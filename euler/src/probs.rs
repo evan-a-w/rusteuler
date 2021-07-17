@@ -566,8 +566,8 @@ pub fn merge<T>(v: &mut Vec<T>, p: usize, q: usize, r: usize)
 
     let n1 = q - p + 1;
     let n2 = r -q;
-    let mut L: Vec<T> = vec![v[0]; n1];
-    let mut R: Vec<T> = vec![v[0]; n2];
+    let mut L: Vec<T> = vec![v[0]; n1+1];
+    let mut R: Vec<T> = vec![v[0]; n2+1];
 
     for i in 0..n1
     {
@@ -601,5 +601,97 @@ pub fn merge<T>(v: &mut Vec<T>, p: usize, q: usize, r: usize)
 pub fn merge_sort<T>(v: &mut Vec<T>)
     where T: Ord + Copy
 {
-    
+    go_merge(v, 0, v.len()-1); 
+}
+
+pub fn go_merge<T>(v: &mut Vec<T>, p: usize, q: usize)
+    where T: Ord + Copy
+{
+    if q - p > 0
+    {
+        let m = (((p+q) as f64)/2.0).floor() as usize;
+        go_merge(v, p, m);
+        go_merge(v, m+1, q);
+        merge(v, p, m, q);
+    }
+}
+
+pub fn prob52() -> usize
+{
+    let mut i = 1;
+    loop
+    {
+        let mut dl = dig_list(i);
+        merge_sort(&mut dl);
+        if (2..7).map(|x| {
+                              let t = i*x;
+                              let mut t = dig_list(t);
+                              merge_sort(&mut t);
+                              t
+                          }).all(|x| x == dl)
+        {
+            break;
+        }
+        i += 1;
+    }
+
+    i
+}
+
+pub fn factorial(n: usize) -> BigUint
+{
+    let mut res = BigUint::from(n);
+    for i in 2..n
+    {
+        res = res * i;
+    }
+
+    res
+}
+
+pub fn nchooser(n: usize, r: usize) -> BigUint
+{
+    let mut num: BigUint; 
+    if r == 1
+    {
+        num = BigUint::from(n);
+    }
+    else
+    {
+        num = BigUint::from(n);
+        for i in ((n-(r-1))..n).rev()
+        {
+            num = num * i;
+        }
+        let den = factorial(r);
+        num = num / den;
+    }
+
+    num
+}
+
+pub fn prob53() -> usize
+{
+    let mut count = 0;
+
+    for n in 23..101
+    {
+        let mid = if n % 2 == 0 {n/2} else {n/2 + 1};
+        
+        let mut r = 1;
+        let b = BigUint::from(1_000_000usize);
+        while r < n
+        {
+            if nchooser(n, r) > b
+            {
+                // nCr > 1,000,000 so all nCk for k = r..(n-r) > 1,000,000
+                // which means we need to increase count by (n-r)-r+1
+                count += n - 2*r + 1;
+                break;
+            }
+            r += 1;
+        }
+    }
+
+    count
 }
