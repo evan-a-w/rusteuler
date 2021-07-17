@@ -2,6 +2,7 @@ use bit_vec::BitVec;
 use num_bigint::{BigUint, ToBigUint};
 use num_traits::Zero;
 use std::collections::HashSet;
+use std::cmp::*;
 
 pub fn prob1() -> usize
 {
@@ -404,15 +405,24 @@ pub fn prob12() -> usize
     }
 }
 
-pub fn prob53() -> usize
+pub fn prob51() -> usize
 {
-    let mut i: usize = 1;
+    let mut i: usize = 2;
+    let mut max = 0;
     loop
     {
-        let mut dl = dig_list(i); 
+        if naive_prime_test(i)
+        {
+            if prime_variants(i) == 8
+            {
+                return i;
+            }
+        }
+        i += 1;
     }
 }
 
+// assumes elemeents of v are distinct
 pub fn combs<T: Copy + Eq>(v: &Vec<T>, n: usize) -> Vec<Vec<T>>
 {
     let mut res: Vec<Vec<T>> = Vec::new();
@@ -446,4 +456,150 @@ pub fn combs<T: Copy + Eq>(v: &Vec<T>, n: usize) -> Vec<Vec<T>>
     }
 
     res
+}
+
+pub fn prime_variants(n: usize) -> usize
+{
+    let mut max = 0;
+    // for every digit we replace, loop over all combs and change, check if prime
+    let dl = dig_list(n);
+    let places: Vec<usize> = (0..dl.len()).collect();
+    
+    for i in 1..(dl.len()+1)
+    {
+        let cmbs = combs(&places, i);
+        for cmbvec in &cmbs
+        {
+            let mut ct = 0;
+            let mut ndl = dl.clone();
+
+            for digit in 0..10
+            {
+
+                for &place in cmbvec
+                {
+                    ndl[place] = digit; 
+                }
+                if ndl[0] == 0
+                {
+                    continue;
+                }
+                let nn = list_dig(&ndl);
+                if naive_prime_test(nn)
+                {
+                    ct += 1;
+                }
+            }
+            
+            if ct > max
+            {
+                max = ct;
+            }
+        }
+    }
+    
+    max
+}
+
+pub fn prime_variants_debug(n: usize) -> usize
+{
+    let mut max = 0;
+    // for every digit we replace, loop over all combs and change, check if prime
+    let dl = dig_list(n);
+    let places: Vec<usize> = (0..dl.len()).collect();
+    
+    for i in 1..(dl.len()+1)
+    {
+        let cmbs = combs(&places, i);
+        for cmbvec in &cmbs
+        {
+            let mut ct = 0;
+            let mut ndl = dl.clone();
+            let mut hash: HashSet<usize> = HashSet::new();
+
+            for digit in 0..10
+            {
+
+                for &place in cmbvec
+                {
+                    ndl[place] = digit; 
+                }
+                if ndl[0] == 0
+                {
+                    continue;
+                }
+                let nn = list_dig(&ndl);
+                if naive_prime_test(nn)
+                {
+                    hash.insert(nn);
+                    ct += 1;
+                }
+            }
+            
+            if ct > max
+            {
+                for i in hash
+                {
+                    print!("{} ", i);
+                }
+                print!(" | ");
+                for &place in cmbvec
+                {
+                    print!("{} ", place);
+                } 
+                println!("");
+                max = ct;
+            }
+        }
+    }
+    
+    max
+}
+
+pub fn merge<T>(v: &mut Vec<T>, p: usize, q: usize, r: usize)
+    where T: Ord + Copy
+{
+    if p > q || p >= r || q >= r
+    {
+        return;
+    }
+
+    let n1 = q - p + 1;
+    let n2 = r -q;
+    let mut L: Vec<T> = vec![v[0]; n1];
+    let mut R: Vec<T> = vec![v[0]; n2];
+
+    for i in 0..n1
+    {
+        L[i] = v[p+i];
+    }
+    for i in 0..n2
+    {
+        R[i] = v[q+i+1];
+    }
+
+    let mut i = 0;
+    let mut j = 0;
+    let mut k = p;
+    while k <= r
+    {
+        if i < n1 && (L[i] <= R[j] || j >= n2)
+        {
+            v[k] = L[i];
+            i += 1;
+        }
+        else
+        {
+            v[k] = R[j];
+            j += 1;
+        }
+
+        k += 1;
+    }
+}
+
+pub fn merge_sort<T>(v: &mut Vec<T>)
+    where T: Ord + Copy
+{
+    
 }
