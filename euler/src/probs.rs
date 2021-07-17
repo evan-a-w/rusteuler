@@ -1,6 +1,8 @@
 use crate::accs::*;
 use num_bigint::{BigUint, ToBigUint};
 use num_traits::Zero;
+use std::io::{self, prelude::*, BufReader};
+use std::fs::File;
 
 pub fn prob1() -> usize
 {
@@ -221,19 +223,32 @@ pub fn prob53() -> usize
 
 pub fn prob31() -> usize
 {
-    let mut arr: [[usize; 8]; 200] = [[1; 8]; 200];
+    let mut grid: [[usize; 8]; 201] = [[1; 8]; 201];
     let coins: [usize; 8] = [1, 2, 5, 10, 20, 50, 100, 200];
-    for i in 1..200
+    for s in 1..201
     {
-        for j in 1..8
+        for p in 1..8 
         {
-            arr[i][j] = arr[i][j-1];
-            if coins[j] <= i
+            grid[s][p] = grid[s][p-1];
+            if s >= coins[p]
             {
-                arr[i][j] += arr[i-coins[j]][j]; 
+                grid[s][p] += grid[s-coins[p]][p];
             }
         }
     }
 
-    arr[199][7]
+    grid[200][7]
+}
+
+pub fn prob54() -> usize
+{
+    let fb = File::open("p054_poker.txt").expect("Failed to open the file");
+    let reader = BufReader::new(fb);
+
+    for line in reader.lines()
+    {
+        println!("{}", line.unwrap());
+    }
+
+    0
 }

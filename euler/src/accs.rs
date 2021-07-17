@@ -1,6 +1,5 @@
 use bit_vec::BitVec;
-use num_bigint::{BigUint, ToBigUint};
-use num_traits::Zero;
+use num_bigint::{BigUint};
 use std::collections::HashSet;
 use std::cmp::*;
 
@@ -477,4 +476,85 @@ pub fn nchooser(n: usize, r: usize) -> BigUint
     }
 
     num
+}
+
+pub enum Suit
+{
+    H, C, S, D
+}
+
+pub enum Face
+{
+    one, two, three, four, five, six, seven, eight, nine, J, Q, K, A
+}
+
+pub struct Card
+{
+    f: Face,
+    s: Suit,
+}
+
+pub enum Rank
+{
+    Hc, Op, Tp, Tk, S, F, Fh, Fk, Sf, Rf
+}
+
+pub struct Deck
+{
+    cards: [Card; 4],
+    r: Rank,
+}
+
+pub fn max_card(d: &Deck) -> i32
+{
+    d.cards.into_iter().map(|x| x.f as i32).max().unwrap()
+}
+
+pub fn get_pairs(d: &Deck) -> Vec<Face>
+{
+    let res: Vec<Face> = Vec::new();
+    for i in 0..3
+    {
+        for j in (i+1)..4
+        {
+            if d.cards[i].f == d.cards[j].f
+            {
+                if !res.into_iter().any(|x| x == d.cards[i])
+                {
+                    res.push(d.cards[i]);
+                }
+            }
+        }
+    }
+
+    res
+}
+
+pub fn rank_gt(d1: Deck, d2: Deck) -> bool
+{
+    let res = false;
+
+    if d1.r as i32 > d2.r as i32
+    {
+        res = true;     
+    }
+    else if d1.r as i32 < d2.r as i32
+    {
+        res = false;
+    }
+    else
+    {
+        res = match d1.r
+        {
+            Suit::Hc => { max_card(&d1) > max_card(&d2) }
+            Suit::Op | Suit::Tk | Suit::Fk => { get_pairs(&d1)[0] > get_pairs(&d2)[0] }
+            Suit::Tp => { get_pairs(&d1).into_iter().max() > get_pairs(&d2).into_iter().max() }
+            Suit::F =>
+            Suit::Fh =>
+            Suit::Sf =>
+            _ => false,
+        }
+  }
+
+    res
 }
