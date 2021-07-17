@@ -1,4 +1,5 @@
 mod probs;
+mod accs;
 
 fn main() 
 {
