@@ -3,5 +3,5 @@ mod accs;
 
 fn main() 
 {
-    println!("{}", probs::prob53());
+    println!("{}", probs::prob31());
 }
