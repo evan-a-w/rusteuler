@@ -546,12 +546,71 @@ pub fn rank_gt(d1: Deck, d2: Deck) -> bool
     {
         res = match d1.r
         {
-            Suit::Hc => { max_card(&d1) > max_card(&d2) }
-            Suit::Op | Suit::Tk | Suit::Fk => { get_pairs(&d1)[0] > get_pairs(&d2)[0] }
-            Suit::Tp => { get_pairs(&d1).into_iter().max() > get_pairs(&d2).into_iter().max() }
-            Suit::F =>
-            Suit::Fh =>
-            Suit::Sf =>
+            Suit::Hc => { 
+                            let mut c1s: Vec<i32> = d1.cards.into_iter().map(|x| x as i32).collect();
+                            let mut c2s: Vec<i32> = d2.cards.into_iter().map(|x| x as i32).collect();
+                            merge_sort(&mut c1s);
+                            merge_sort(&mut c2s);
+                            loop
+                            {
+                                let m1 = c1s.into_iter().max().unwrap_or(-1);
+                                let m2 = c2s.into_iter().max().unwrap_or(-1);
+                                if m1 > m2
+                                {
+                                    return true; 
+                                }
+                                else if m1 < m2
+                                {
+                                    return false;
+                                }
+
+                                c1s = c1s.into_iter().filter(|x| x != m1).collect();
+                                c2s = c2s.into_iter().filter(|x| x != m2).collect();
+                                if c1s.len() == 0
+                                {
+                                    if c2s.len() > 0
+                                    {
+                                        return false; 
+                                    }
+                                    return true;
+                                }
+                            }
+                            true
+                        },
+            Suit::Tk | Suit::Fk | Suit::Tp |
+            Suit::Op => {
+                            let mut p1 = get_pairs(&d1);
+                            let mut p2 = get_pairs(&d2);
+                            let mut res = p1[0] > p2[0];
+                            if !res
+                            {
+                                if p1.len() > 1
+                                {
+                                    res = p2.len() == 0 || p1[1] > p2[1];
+                                }
+                                else
+                                {
+                                    let nd1 = Deck
+                                                    {
+                                                        cards: d1.cards.clone(),
+                                                        rank: Rank::Hc,
+                                                    };
+                                    let nd2 = Deck
+                                                    {
+                                                        cards: d2.cards.clone(),
+                                                        rank: Rank::Hc,
+                                                    };
+                                    res = rank_gt(nd1, nd2);
+                                }
+                            }
+
+                            res
+                        },
+            Suit::F =>  {
+                            
+                        },
+            Suit::Fh =>,
+            Suit::Sf =>,
             _ => false,
         }
   }
