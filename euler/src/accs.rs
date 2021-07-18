@@ -478,31 +478,37 @@ pub fn nchooser(n: usize, r: usize) -> BigUint
     num
 }
 
+#[derive(Debug, PartialEq, Eq, Copy, Clone, Ord, PartialOrd, Hash)]
 pub enum Suit
 {
     H, C, S, D
 }
 
+#[derive(Debug, PartialEq, Eq, Copy, Clone, Ord, PartialOrd, Hash)]
 pub enum Face
 {
-    one, two, three, four, five, six, seven, eight, nine, J, Q, K, A
+    one, two, three, four, five, six, seven, eight, nine, ten, J, Q, K, A
 }
 
+#[derive(Debug, PartialEq, Eq, Copy, Clone, Ord, PartialOrd, Hash)]
 pub struct Card
 {
-    f: Face,
-    s: Suit,
+    pub f: Face,
+    pub s: Suit,
 }
 
+#[derive(Debug, PartialEq, Eq, Copy, Clone, Ord, PartialOrd, Hash)]
 pub enum Rank
 {
-    Hc, Op, Tp, Tk, S, F, Fh, Fk, Sf, Rf
+    Hc(Face), Op(Face), Tp(Face, Face), Tk(Face), S(Face), F(Face),
+    Fh(Face, Face), Fk(Face), Sf(Face), Rf
 }
 
+#[derive(Debug, PartialEq, Eq, Copy, Clone, Ord, PartialOrd, Hash)]
 pub struct Deck
 {
-    cards: [Card; 4],
-    r: Rank,
+    pub cards: [Card; 5],
+    pub r: Rank,
 }
 
 pub fn max_card(d: &Deck) -> i32
@@ -512,16 +518,17 @@ pub fn max_card(d: &Deck) -> i32
 
 pub fn get_pairs(d: &Deck) -> Vec<Face>
 {
-    let res: Vec<Face> = Vec::new();
+    let mut res: Vec<Face> = Vec::new();
     for i in 0..3
     {
         for j in (i+1)..4
         {
             if d.cards[i].f == d.cards[j].f
             {
-                if !res.into_iter().any(|x| x == d.cards[i])
+                let nr = &mut res;
+                if !nr.into_iter().any(|&mut x| x == d.cards[i].f)
                 {
-                    res.push(d.cards[i]);
+                    nr.push(d.cards[i].f);
                 }
             }
         }
@@ -530,90 +537,85 @@ pub fn get_pairs(d: &Deck) -> Vec<Face>
     res
 }
 
+pub fn rank(d: &mut Deck)
+{
+    let mut suit_check = [false; 4];
+    let mut rf_ns = [false; 5];
+    let mut last_val = d.cards[0].f as i32;
+    let mut straight = true;
+    let mut vals: Vec<(Face, usize)> = Vec::new();
+
+    for i in 0..5
+    {
+        if i > 0
+        {
+            straight &= d.cards[i].f as i32 - last_val == 1
+        }
+        last_val = d.cards[i].f as i32;
+
+        let mut inside  = false;
+        for mut t in &mut vals
+        {
+            let (f, _) = t;
+            if d.cards[i].f == *f
+            {
+                inside = true;
+                t.1 = t.1 + 1;
+                break;
+            }
+        }
+        if !inside { vals.push((d.cards[i].f, 1)); }
+
+        suit_check[d.cards[i].s as usize] = true;
+        if d.cards[i].s as usize >= Face::ten as usize
+        {
+            rf_ns[d.cards[i].s as usize - Face::ten as usize] = true; 
+        }
+    }
+    let flush: bool = suit_check.into_iter().fold(0, |acc, &x| if x { acc + 1 } else { acc }) == 1;
+    let rf_n: bool = rf_ns.into_iter().all(|&x| x);
+    let mut max = d.cards[0].f;
+    for &i in &d.cards
+    {
+        if i.f as usize > max as usize
+        {
+            max = i.f;
+        }
+    }
+
+    let mut max_c: usize = 0;
+    let mut max_f: Face = vals[0].0;
+    let mut snd_max_c: usize = 0;
+    let mut snd_max_f: Face = vals[0].0;
+    for (f, c) in &vals
+    {
+        if *c > max_c
+        {
+            snd_max_f = max_f;
+            snd_max_c = max_c;
+            max_f = *f;
+            max_c = *c;
+        }
+        else if *c > snd_max_c
+        {
+            snd_max_f = *f;
+            snd_max_c = *c;
+        }
+    }
+    
+    if rf_n && flush { d.r = Rank::Rf; }
+    else if straight && flush { d.r = Rank::Sf(max); }
+    else if max_c == 4 { d.r = Rank::Fk(max_f); }
+    else if max_c == 3 && snd_max_c == 2 { d.r = Rank::Fh(max_f, snd_max_f); }
+    else if flush { d.r = Rank::F(max); }
+    else if straight { d.r = Rank::S(max); }
+    else if max_c == 3 { d.r = Rank::Tk(max_f); }
+    else if max_c == 2 && vals.len() == 3 { d.r = Rank::Tp(max_f, snd_max_f); }
+    else if max_c == 2 { d.r = Rank::Op(max_f); }
+    else { d.r = Rank::Hc(max); }
+}
+
 pub fn rank_gt(d1: Deck, d2: Deck) -> bool
 {
-    let res = false;
-
-    if d1.r as i32 > d2.r as i32
-    {
-        res = true;     
-    }
-    else if d1.r as i32 < d2.r as i32
-    {
-        res = false;
-    }
-    else
-    {
-        res = match d1.r
-        {
-            Suit::Hc => { 
-                            let mut c1s: Vec<i32> = d1.cards.into_iter().map(|x| x as i32).collect();
-                            let mut c2s: Vec<i32> = d2.cards.into_iter().map(|x| x as i32).collect();
-                            merge_sort(&mut c1s);
-                            merge_sort(&mut c2s);
-                            loop
-                            {
-                                let m1 = c1s.into_iter().max().unwrap_or(-1);
-                                let m2 = c2s.into_iter().max().unwrap_or(-1);
-                                if m1 > m2
-                                {
-                                    return true; 
-                                }
-                                else if m1 < m2
-                                {
-                                    return false;
-                                }
-
-                                c1s = c1s.into_iter().filter(|x| x != m1).collect();
-                                c2s = c2s.into_iter().filter(|x| x != m2).collect();
-                                if c1s.len() == 0
-                                {
-                                    if c2s.len() > 0
-                                    {
-                                        return false; 
-                                    }
-                                    return true;
-                                }
-                            }
-                            true
-                        },
-            Suit::Tk | Suit::Fk | Suit::Tp |
-            Suit::Op => {
-                            let mut p1 = get_pairs(&d1);
-                            let mut p2 = get_pairs(&d2);
-                            let mut res = p1[0] > p2[0];
-                            if !res
-                            {
-                                if p1.len() > 1
-                                {
-                                    res = p2.len() == 0 || p1[1] > p2[1];
-                                }
-                                else
-                                {
-                                    let nd1 = Deck
-                                                    {
-                                                        cards: d1.cards.clone(),
-                                                        rank: Rank::Hc,
-                                                    };
-                                    let nd2 = Deck
-                                                    {
-                                                        cards: d2.cards.clone(),
-                                                        rank: Rank::Hc,
-                                                    };
-                                    res = rank_gt(nd1, nd2);
-                                }
-                            }
-
-                            res
-                        },
-            Suit::F =>  {
-                            
-                        },
-            Suit::Fh =>,
-            Suit::Sf =>,
-            _ => false,
-        }
-  }
-
-    res
+    true
 }
