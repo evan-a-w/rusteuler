@@ -3,6 +3,7 @@ use num_bigint::{BigUint, ToBigUint};
 use num_traits::Zero;
 use std::io::{self, prelude::*, BufReader};
 use std::fs::File;
+use core::ops::Rem;
 
 pub fn prob1() -> usize
 {
@@ -282,4 +283,36 @@ pub fn prob54() -> (usize, usize)
 pub fn prob55() -> usize
 {
     (1..10_000).map(|x| is_lychrel(x)).sum()
+}
+
+pub fn prob56() -> BigUint
+{
+    let mut max = BigUint::from(1u32);
+    let mut a = BigUint::from(2u32);
+    let m = BigUint::from(100u32);
+    let z = BigUint::from(0u32);
+    let t = BigUint::from(10u32);
+    while a < m
+    {
+        let mut outer_curr = a.clone();
+        for i in 0..100
+        {
+            let mut curr = outer_curr.clone();
+            let mut sum = z.clone();
+            while &curr > &z
+            {
+                let nc = curr.clone();
+                sum += nc.rem(&t);
+                curr /= &t;
+            }
+            if sum > max
+            {
+                max = sum;
+            }
+            outer_curr *= &a;
+        }
+        a += 1u32;
+    }
+
+    max
 }

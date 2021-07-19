@@ -782,3 +782,29 @@ pub fn is_lychrel(mut n: usize) -> usize
         count += 1;
     }
 }
+
+pub fn digit_sum_naiive(a: usize, b: u32) -> usize
+{
+    let mut sum: usize = 0;
+    let mut n = a.pow(b); 
+    while n > 0
+    {
+        sum += n % 10; 
+        n /= 10;
+    }
+    n
+}
+
+pub fn power_mod(a: usize, b: usize, m: usize) -> usize
+{
+    // ndigits = floor(log_10(a^b)) + 1
+    //         = floor(blog_10(a)) + 1
+    // digit_sum(n) = sum from k = 1 to ndigits of 
+
+    let mut res = 1;
+    for i in 0..b
+    {
+        res = (res * a) % m;
+    }
+    res
+}
