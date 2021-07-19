@@ -240,11 +240,12 @@ pub fn prob31() -> usize
     grid[200][7]
 }
 
-pub fn prob54() -> usize
+pub fn prob54() -> (usize, usize)
 {
     let fb = File::open("p054_poker.txt").expect("Failed to open the file");
     let reader = BufReader::new(fb);
     let mut count = 0;
+    let mut total = 0;
 
     for line in reader.lines()
     {
@@ -272,7 +273,13 @@ pub fn prob54() -> usize
         {
             count += 1; 
         }
+        total += 1;
     }
 
-    count
+    (count, total)
+}
+
+pub fn prob55() -> usize
+{
+    (1..10_000).map(|x| is_lychrel(x)).sum()
 }

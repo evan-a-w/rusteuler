@@ -2,6 +2,10 @@ use bit_vec::BitVec;
 use num_bigint::{BigUint};
 use std::collections::HashSet;
 use std::cmp::*;
+use std::fmt;
+use palindrome;
+use unicode_segmentation::UnicodeSegmentation;
+use std::str::FromStr;
 
 pub fn fibs(n : usize) -> Vec<usize>
 {
@@ -121,6 +125,10 @@ pub fn list_dig(vec : &Vec<u8>) -> usize
     let mut res : usize = 0;
     for i in 0..vec.len()
     {
+        if res >= usize::MAX / 10
+        {
+            println!("{}", res); 
+        }
         res *= 10;
         res += vec[i] as usize;
     }
@@ -497,6 +505,39 @@ pub struct Card
     pub s: Suit,
 }
 
+impl fmt::Display for Card
+{
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+    {
+        let sp = match self.s
+        {
+            Suit::H => "H",
+            Suit::C => "C",
+            Suit::D => "D",
+            Suit::S => "S",
+        };
+        let fp = match self.f
+        {
+            Face::Null => "N",
+            Face::one => "1",
+            Face::two => "2",
+            Face::three => "3",
+            Face::four => "4",
+            Face::five => "5",
+            Face::six => "6",
+            Face::seven => "7",
+            Face::eight => "8",
+            Face::nine => "9",
+            Face::ten => "T",
+            Face::J => "J",
+            Face::Q => "Q",
+            Face::K => "K",
+            Face::A => "A",
+        };
+        write!(f, "{}{}", fp, sp)
+    }
+}
+
 #[derive(Debug, PartialEq, Eq, Copy, Clone, Ord, PartialOrd, Hash)]
 pub enum Rank
 {
@@ -509,6 +550,14 @@ pub struct Deck
 {
     pub cards: [Card; 5],
     pub r: Rank,
+}
+
+impl fmt::Display for Deck
+{
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+    {
+        write!(f, "[{} {} {} {} {}]", self.cards[0], self.cards[1], self.cards[2], self.cards[3], self.cards[4])
+    }
 }
 
 pub fn max_card(d: &Deck) -> i32
@@ -642,12 +691,6 @@ pub fn rank_gt(d1: &mut Deck, d2: &mut Deck) -> bool
         }
         else
         {
-            if d1.r <= Rank::Hc(Face::A)
-            {
-                res = false;
-                break;
-            }
-
             fn iter(d: &mut Deck)
             {
                 match d.r
@@ -677,6 +720,8 @@ pub fn rank_gt(d1: &mut Deck, d2: &mut Deck) -> bool
         }
     }
 
+    println!("{} {} {} ({:?} vs {:?})", &d1, 
+             if res {"wins"} else {"loses"}, &d2, &d1.r, &d2.r);
     res
 }
 
@@ -711,4 +756,29 @@ pub fn str_to_card(s: String) -> Card
     };
 
     Card { f: face, s: suit, }
+}
+
+pub fn is_lychrel(mut n: usize) -> usize
+{
+    let mut count = 1;
+    let mut cn = BigUint::from(n);
+    loop
+    {
+        let os = cn.to_string();
+        let os: String = os.graphemes(true).rev().collect();
+        let os: BigUint = BigUint::from_str(&os).unwrap();
+        cn = cn + os;
+
+        if palindrome::is_palindrome(cn.to_string()) 
+        {
+            return 0;
+        }
+        if count == 50
+        {
+            return 1;
+        }
+
+
+        count += 1;
+    }
 }
