@@ -487,7 +487,7 @@ pub enum Suit
 #[derive(Debug, PartialEq, Eq, Copy, Clone, Ord, PartialOrd, Hash)]
 pub enum Face
 {
-    one, two, three, four, five, six, seven, eight, nine, ten, J, Q, K, A
+    Null, one, two, three, four, five, six, seven, eight, nine, ten, J, Q, K, A
 }
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone, Ord, PartialOrd, Hash)]
@@ -501,7 +501,7 @@ pub struct Card
 pub enum Rank
 {
     Hc(Face), Op(Face), Tp(Face, Face), Tk(Face), S(Face), F(Face),
-    Fh(Face, Face), Fk(Face), Sf(Face), Rf
+    Fh(Face, Face), Fk(Face), Sf(Face), Rf, Sup
 }
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone, Ord, PartialOrd, Hash)]
@@ -537,7 +537,7 @@ pub fn get_pairs(d: &Deck) -> Vec<Face>
     res
 }
 
-pub fn rank(d: &mut Deck)
+pub fn rank_m(d: &mut Deck, rm: Rank)
 {
     let mut suit_check = [false; 4];
     let mut rf_ns = [false; 5];
@@ -547,29 +547,32 @@ pub fn rank(d: &mut Deck)
 
     for i in 0..5
     {
-        if i > 0
+        if d.cards[i].f != Face::Null
         {
-            straight &= d.cards[i].f as i32 - last_val == 1
-        }
-        last_val = d.cards[i].f as i32;
-
-        let mut inside  = false;
-        for mut t in &mut vals
-        {
-            let (f, _) = t;
-            if d.cards[i].f == *f
+            if i > 0
             {
-                inside = true;
-                t.1 = t.1 + 1;
-                break;
+                straight &= d.cards[i].f as i32 - last_val == 1
             }
-        }
-        if !inside { vals.push((d.cards[i].f, 1)); }
+            last_val = d.cards[i].f as i32;
 
-        suit_check[d.cards[i].s as usize] = true;
-        if d.cards[i].s as usize >= Face::ten as usize
-        {
-            rf_ns[d.cards[i].s as usize - Face::ten as usize] = true; 
+            let mut inside  = false;
+            for mut t in &mut vals
+            {
+                let (f, _) = t;
+                if d.cards[i].f == *f
+                {
+                    inside = true;
+                    t.1 = t.1 + 1;
+                    break;
+                }
+            }
+            if !inside { vals.push((d.cards[i].f, 1)); }
+
+            suit_check[d.cards[i].s as usize] = true;
+            if d.cards[i].s as usize >= Face::ten as usize
+            {
+                rf_ns[d.cards[i].s as usize - Face::ten as usize] = true; 
+            }
         }
     }
     let flush: bool = suit_check.into_iter().fold(0, |acc, &x| if x { acc + 1 } else { acc }) == 1;
@@ -603,19 +606,109 @@ pub fn rank(d: &mut Deck)
         }
     }
     
-    if rf_n && flush { d.r = Rank::Rf; }
-    else if straight && flush { d.r = Rank::Sf(max); }
-    else if max_c == 4 { d.r = Rank::Fk(max_f); }
-    else if max_c == 3 && snd_max_c == 2 { d.r = Rank::Fh(max_f, snd_max_f); }
-    else if flush { d.r = Rank::F(max); }
-    else if straight { d.r = Rank::S(max); }
-    else if max_c == 3 { d.r = Rank::Tk(max_f); }
-    else if max_c == 2 && vals.len() == 3 { d.r = Rank::Tp(max_f, snd_max_f); }
-    else if max_c == 2 { d.r = Rank::Op(max_f); }
+    if Rank::Rf < rm && rf_n && flush { d.r = Rank::Rf; }
+    else if Rank::Sf(Face::A) < rm && straight && flush { d.r = Rank::Sf(max); }
+    else if Rank::Fk(Face::A) < rm && max_c == 4 { d.r = Rank::Fk(max_f); }
+    else if Rank::Fh(Face::A, Face::A) < rm && max_c == 3 && snd_max_c == 2 { d.r = Rank::Fh(max_f, snd_max_f); }
+    else if Rank::F(Face::A) < rm && flush { d.r = Rank::F(max); }
+    else if Rank::S(Face::A) < rm && straight { d.r = Rank::S(max); }
+    else if Rank::Tk(Face::A) < rm && max_c == 3 { d.r = Rank::Tk(max_f); }
+    else if Rank::Tp(Face::A, Face::A) < rm && max_c == 2 && vals.len() == 3 { d.r = Rank::Tp(max_f, snd_max_f); }
+    else if Rank::Op(Face::A) < rm && max_c == 2 { d.r = Rank::Op(max_f); }
     else { d.r = Rank::Hc(max); }
 }
 
-pub fn rank_gt(d1: Deck, d2: Deck) -> bool
+pub fn rank(d: &mut Deck)
 {
-    true
+    rank_m(d, Rank::Sup);
+}
+
+pub fn rank_gt(d1: &mut Deck, d2: &mut Deck) -> bool
+{
+    let mut res = false;
+    rank(d1);
+    rank(d2);
+    loop
+    {
+        if d1.r > d2.r
+        {
+            res = true;
+            break;
+        }
+        else if d1.r < d2.r
+        {
+            res = false;
+            break;
+        }
+        else
+        {
+            if d1.r <= Rank::Hc(Face::A)
+            {
+                res = false;
+                break;
+            }
+
+            fn iter(d: &mut Deck)
+            {
+                match d.r
+                {
+                    Rank::Sf(f) | Rank::Fk(f) | Rank::F(f) | Rank::S(f) | Rank::Tk(f) |
+                    Rank::Op(f) | Rank::Hc(f) =>
+                    {
+                        for mut i in &mut d.cards
+                        {
+                            if i.f == f { i.f = Face::Null; }
+                        }
+                    },
+                    Rank::Fh(f1, f2) | Rank::Tp(f1, f2) =>
+                    {
+                        for mut i in &mut d.cards
+                        {
+                            if i.f == f1 || i.f == f2 { i.f = Face::Null; } 
+                        }
+                    }
+                    _ => {},
+                }
+            }
+            iter(d1);
+            iter(d2);
+            rank_m(d1, d1.r);
+            rank_m(d2, d2.r);
+        }
+    }
+
+    res
+}
+
+pub fn str_to_card(s: String) -> Card
+{
+    let face: Face = match &s[0..1]
+    {
+        "1" => Face::one,
+        "2" => Face::two,
+        "3" => Face::three,
+        "4" => Face::four,
+        "5" => Face::five,
+        "6" => Face::six,
+        "7" => Face::seven,
+        "8" => Face::eight,
+        "9" => Face::nine,
+        "T" => Face::ten,
+        "J" => Face::J,
+        "Q" => Face::Q,
+        "K" => Face::K,
+        "A" => Face::A,
+        _ => { println!("{}", &s[0..1]); Face::Null },
+    };
+
+    let suit: Suit = match &s[1..2]
+    {
+        "S" => Suit::S,
+        "D" => Suit::D,
+        "C" => Suit::C,
+        "H" => Suit::H,
+        _ => Suit::H,
+    };
+
+    Card { f: face, s: suit, }
 }

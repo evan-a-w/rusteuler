@@ -244,11 +244,35 @@ pub fn prob54() -> usize
 {
     let fb = File::open("p054_poker.txt").expect("Failed to open the file");
     let reader = BufReader::new(fb);
+    let mut count = 0;
 
     for line in reader.lines()
     {
-        println!("{}", line.unwrap());
+        let things: Vec<Card> = line.unwrap().trim().split(" ")
+                                    .map(|x| str_to_card(x.to_string()))
+                                    .collect();
+        let mut cards1: [Card; 5] = [ Card { f: Face::Null, s: Suit::H, }; 5];
+        let mut cards2: [Card; 5] = [ Card { f: Face::Null, s: Suit::H, }; 5];
+        for i in 0..10
+        {
+            if i <= 4
+            {
+                cards1[i] = things[i]; 
+            }
+            else
+            {
+                cards2[i-5] = things[i];
+            }
+        }
+
+        let mut d1 = Deck { cards: cards1, r: Rank::Sup, };
+        let mut d2 = Deck { cards: cards2, r: Rank::Sup, };
+
+        if rank_gt(&mut d1, &mut d2)
+        {
+            count += 1; 
+        }
     }
 
-    0
+    count
 }
