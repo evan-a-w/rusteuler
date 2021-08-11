@@ -1,4 +1,5 @@
 use crate::accs::*;
+use crate::ratio::*;
 use num_bigint::{BigUint, ToBigUint};
 use num_traits::Zero;
 use std::io::{self, prelude::*, BufReader};
@@ -315,4 +316,24 @@ pub fn prob56() -> BigUint
     }
 
     max
+}
+
+pub fn prob57_overflow() -> usize {
+    let mut curr = Ratio {
+        num: 1,
+        den: 2,
+    };
+    let mut count = 0;
+
+    for _ in 1..=1000 {
+        let ct = Ratio { num: 1, den: 1 } + curr;
+        println!("{}/{},    {}", ct.num, ct.den, count);
+        if (ct.num as f64).log10().floor() > (ct.den as f64).log10().floor() {
+            count += 1;
+        }
+        curr = Ratio { num: 2, den: 1 } + curr;
+        curr = curr.inv();
+    }
+
+    count
 }
