@@ -1,9 +1,8 @@
-mod probs;
 mod accs;
-mod ratio;
 mod bcd;
+mod probs;
+mod ratio;
 
-fn main() 
-{
+fn main() {
     println!("{}", probs::prob56());
 }

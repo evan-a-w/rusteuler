@@ -1,5 +1,5 @@
+use num_traits::{Num, NumAssignOps, NumAssignRef, NumOps, NumRef};
 use std::ops::*;
-use num_traits::{Num, NumOps, NumAssignOps, NumRef, NumAssignRef};
 
 #[derive(Clone, Copy, Debug)]
 pub struct Ratio {
@@ -9,7 +9,9 @@ pub struct Ratio {
 
 pub fn gcd(mut a: u128, mut b: u128) -> u128 {
     loop {
-        if a == 0 { return b; }
+        if a == 0 {
+            return b;
+        }
         let tmp = b % a;
         b = a;
         a = tmp;
@@ -17,7 +19,7 @@ pub fn gcd(mut a: u128, mut b: u128) -> u128 {
 }
 
 fn glcm(a: u128, b: u128) -> u128 {
-    a/gcd(a,b)*b
+    a / gcd(a, b) * b
 }
 
 impl Ratio {
@@ -42,7 +44,8 @@ mod tests {
         let t = crate::ratio::Ratio { num: 1, den: 1 } + crate::ratio::Ratio { num: 1, den: 2 };
         assert!(t.num == 3 && t.den == 2);
 
-        let t = crate::ratio::Ratio { num: 668, den: 15 } + crate::ratio::Ratio { num: 736, den: 5 };
+        let t =
+            crate::ratio::Ratio { num: 668, den: 15 } + crate::ratio::Ratio { num: 736, den: 5 };
         assert!(t.num == 2876 && t.den == 15);
     }
 

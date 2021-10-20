@@ -7,12 +7,13 @@ pub struct BCD {
 impl From<String> for BCD {
     fn from(s: String) -> Self {
         BCD {
-            bcd: s.chars()
-                  .rev()
-                  .map(|x| x.to_digit(10).expect("Invalid string") as i8)
-                  .collect(),
+            bcd: s
+                .chars()
+                .rev()
+                .map(|x| x.to_digit(10).expect("Invalid string") as i8)
+                .collect(),
         }
-    } 
+    }
 }
 
 impl BCD {
