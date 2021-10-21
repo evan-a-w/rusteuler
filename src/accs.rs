@@ -6,6 +6,7 @@ use std::collections::HashSet;
 use std::fmt;
 use std::str::FromStr;
 use unicode_segmentation::UnicodeSegmentation;
+use rustlib::primes::*;
 
 pub fn fibs(n: usize) -> Vec<usize> {
     if n < 3 {
@@ -734,4 +735,11 @@ pub fn power_mod(a: usize, b: usize, m: usize) -> usize {
         res = (res * a) % m;
     }
     res
+}
+
+pub fn concat_prime(a: usize, b: usize) -> bool {
+    let astr = a.to_string();
+    let bstr = b.to_string();
+    is_prime((astr.clone() + &bstr).parse().unwrap())
+    && is_prime((bstr + &astr).parse().unwrap())
 }

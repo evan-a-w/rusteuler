@@ -15,6 +15,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "349f9b6a179ed607305526ca489b34ad0a41aed5f7980fa90eb03160b69598fb"
 
 [[package]]
+name = "either"
+version = "1.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e78d4f1cc4ae33bbfc157ed5d5a5ef3bc29227303d595861deb238fcec4e9457"
+
+[[package]]
 name = "euler"
 version = "0.1.0"
 dependencies = [
@@ -23,7 +29,17 @@ dependencies = [
  "num-bigint",
  "num-traits",
  "palindrome",
+ "rustlib",
  "unicode-segmentation",
+]
+
+[[package]]
+name = "itertools"
+version = "0.10.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "69ddb889f9d0d08a67338271fa9b62996bc788c7796a5c18cf057420aaed5eaf"
+dependencies = [
+ "either",
 ]
 
 [[package]]
@@ -42,9 +58,9 @@ dependencies = [
 
 [[package]]
 name = "num-bigint"
-version = "0.4.0"
+version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4e0d047c1062aa51e256408c560894e5251f08925980e53cf1aa5bd00eec6512"
+checksum = "74e768dff5fb39a41b3bcd30bb25cf989706c90d028d1ad71971987aa309d535"
 dependencies = [
  "autocfg",
  "num-integer",
@@ -107,6 +123,15 @@ name = "palindrome"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ad0e2dd895f762f1f48f435562f3e8f0162fb2cbc25b0ee7d3296ab0f39f0719"
+
+[[package]]
+name = "rustlib"
+version = "0.1.0"
+source = "git+https://github.com/evan-a-w/rustlib#1116d3c91f147b59356338d60472dee6fe5b0d16"
+dependencies = [
+ "itertools",
+ "num-traits",
+]
 
 [[package]]
 name = "unicode-segmentation"

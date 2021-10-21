@@ -1,10 +1,11 @@
 use crate::accs::*;
-use crate::ratio::*;
 use core::ops::Rem;
 use num_bigint::{BigUint, ToBigUint};
 use num_traits::Zero;
 use std::fs::File;
 use std::io::{self, prelude::*, BufReader};
+use rustlib::{primes, big_bcd::BigBcd, bool_arr::BoolArr, ratio::Ratio};
+use std::collections::HashMap;
 
 pub fn prob1() -> usize {
     (3..1000).filter(|x| x % 3 == 0 || x % 5 == 0).sum()
@@ -114,11 +115,23 @@ pub fn prob9() -> usize {
     0
 }
 
+// 0.03s release
 pub fn prob10() -> BigUint {
     let mut res: BigUint = Zero::zero();
-    let primes = segmented_sieve(2000000);
+    let primes = primes::segmented_sieve_till(2000000);
     for i in primes {
         res += i.to_biguint().unwrap();
+    }
+
+    res
+}
+
+// 0.04s seconds release
+pub fn prob10_() -> BigBcd {
+    let mut res: BigBcd = BigBcd::from(0);
+    let primes = primes::segmented_sieve_till(2000000);
+    for i in primes {
+        res = res.add(&BigBcd::from(i));
     }
 
     res
@@ -288,19 +301,34 @@ pub fn prob56() -> BigUint {
     max
 }
 
-pub fn prob57_overflow() -> usize {
-    let mut curr = Ratio { num: 1, den: 2 };
-    let mut count = 0;
-
-    for _ in 1..=1000 {
-        let ct = Ratio { num: 1, den: 1 } + curr;
-        println!("{}/{},    {}", ct.num, ct.den, count);
-        if (ct.num as f64).log10().floor() > (ct.den as f64).log10().floor() {
-            count += 1;
+pub fn prob60() -> usize {
+    let primes = primes::segmented_sieve_till(50000);
+    let mut map: HashMap<usize, Vec<usize>> = HashMap::new();
+    for i in 0..(primes.len() - 1) {
+        let mut curr = vec![];
+        for j in (i + 1)..primes.len() {
+            if concat_prime(primes[i], primes[j]) {
+                curr.push(primes[j]);
+            }
         }
-        curr = Ratio { num: 2, den: 1 } + curr;
-        curr = curr.inv();
+        map.insert(primes[i], curr);
     }
+    for a in 0..(primes.len() - 4) {
+        for b in a..(primes.len() - 3) {
+            if !map.get(&a).unwrap().iter().any(|&x| x==b) {
+                continue;
+            } 
+            for c in b..(primes.len() - 2) {
+                if !map.get(&a).unwrap().iter().any(|&x| x==b) {
+                    continue;
+                } 
+                for d in c..(primes.len() - 1) {
+                    for e in d..primes.len() {
 
-    count
+                    }
+                }
+            }
+        }
+    }
+    0
 }
