@@ -127,7 +127,7 @@ checksum = "ad0e2dd895f762f1f48f435562f3e8f0162fb2cbc25b0ee7d3296ab0f39f0719"
 [[package]]
 name = "rustlib"
 version = "0.1.0"
-source = "git+https://github.com/evan-a-w/rustlib#1116d3c91f147b59356338d60472dee6fe5b0d16"
+source = "git+https://github.com/evan-a-w/rustlib#6b3c318423e90a48d69af89ed33dcdafab59ec6d"
 dependencies = [
  "itertools",
  "num-traits",

@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use crate::accs::*;
 use core::ops::Rem;
 use num_bigint::{BigUint, ToBigUint};
@@ -5,7 +7,8 @@ use num_traits::Zero;
 use std::fs::File;
 use std::io::{self, prelude::*, BufReader};
 use rustlib::{primes, big_bcd::BigBcd, bool_arr::BoolArr, ratio::Ratio};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
+use std::cmp::{max, min};
 
 pub fn prob1() -> usize {
     (3..1000).filter(|x| x % 3 == 0 || x % 5 == 0).sum()
@@ -301,34 +304,71 @@ pub fn prob56() -> BigUint {
     max
 }
 
+fn gen_pairs(p: usize, primes: &Vec<usize>, map: &mut HashMap<usize, HashSet<usize>>) {
+    let mut curr_set = HashSet::new();
+    for &b in primes.iter().filter(|&&x| x > p) {
+        if concat_prime(p, b) {
+            curr_set.insert(b);
+        }
+    }
+    map.insert(p, curr_set);
+}
+
 pub fn prob60() -> usize {
-    let primes = primes::segmented_sieve_till(50000);
-    let mut map: HashMap<usize, Vec<usize>> = HashMap::new();
-    for i in 0..(primes.len() - 1) {
-        let mut curr = vec![];
+    let primes = primes::segmented_sieve_till(30000);
+    let mut map: HashMap<usize, HashSet<usize>> = HashMap::new();
+    for i in 0..primes.len() {
+        let mut curr = HashSet::new();
         for j in (i + 1)..primes.len() {
             if concat_prime(primes[i], primes[j]) {
-                curr.push(primes[j]);
+                curr.insert(primes[j]);
             }
         }
         map.insert(primes[i], curr);
     }
-    for a in 0..(primes.len() - 4) {
-        for b in a..(primes.len() - 3) {
-            if !map.get(&a).unwrap().iter().any(|&x| x==b) {
-                continue;
-            } 
-            for c in b..(primes.len() - 2) {
-                if !map.get(&a).unwrap().iter().any(|&x| x==b) {
-                    continue;
-                } 
-                for d in c..(primes.len() - 1) {
-                    for e in d..primes.len() {
-
-                    }
-                }
+    let mut curr_min = usize::MAX;
+    for &a in primes.iter() {
+        if !map.contains_key(&a) {
+            gen_pairs(a, &primes, &mut map);
+        }
+        if a * 5 >= curr_min {
+            break;
+        }
+        let mut curr_primes = vec![a];
+        let aset = map.get(&a).unwrap().clone();
+        for &b in aset.iter() {
+            if !map.contains_key(&b) {
+                gen_pairs(b, &primes, &mut map);
             }
+            curr_primes.push(b);
+            let bset: HashSet<usize> =
+                aset.intersection(&map.get(&b).unwrap()).cloned().collect();
+            for &c in bset.iter() {
+                if !map.contains_key(&c) {
+                    gen_pairs(c, &primes, &mut map);
+                }
+                curr_primes.push(c);
+                let cset: HashSet<usize> =
+                    bset.intersection(&map.get(&c).unwrap()).cloned().collect();
+                for &d in cset.iter() {
+                    if !map.contains_key(&d) {
+                        gen_pairs(d, &primes, &mut map);
+                    }
+                    curr_primes.push(d);
+                    let dset: HashSet<usize> =
+                        cset.intersection(&map.get(&d).unwrap()).cloned().collect();
+                    for &e in dset.iter() {
+                        curr_primes.push(e);
+                        println!("{:?}", &curr_primes);
+                        curr_min = min(curr_min, curr_primes.iter().sum());
+                        curr_primes.pop();
+                    }
+                    curr_primes.pop();
+                }
+                curr_primes.pop();
+            }
+            curr_primes.pop();
         }
     }
-    0
+    curr_min
 }
