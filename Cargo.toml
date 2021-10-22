@@ -14,3 +14,4 @@ num-bigint = "0.4"
 palindrome = "0.1.1"
 unicode-segmentation = "0.1.2"
 rustlib = { git = "https://github.com/evan-a-w/rustlib" }
+itertools = "0.8.2"

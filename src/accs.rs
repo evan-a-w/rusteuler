@@ -743,3 +743,9 @@ pub fn concat_prime(a: usize, b: usize) -> bool {
     is_prime((astr.clone() + &bstr).parse().unwrap())
     && is_prime((bstr + &astr).parse().unwrap())
 }
+
+pub fn polygonal(sides: usize, n: usize) -> usize {
+    let s = sides as i64;
+    let n = n as i64;
+    ((((s-2) * n * n) - ((s-4)*n)) / 2) as usize
+}

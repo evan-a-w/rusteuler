@@ -9,6 +9,8 @@ use std::io::{self, prelude::*, BufReader};
 use rustlib::{primes, big_bcd::BigBcd, bool_arr::BoolArr, ratio::Ratio};
 use std::collections::{HashMap, HashSet};
 use std::cmp::{max, min};
+use itertools::Itertools;
+use std::iter::FromIterator;
 
 pub fn prob1() -> usize {
     (3..1000).filter(|x| x % 3 == 0 || x % 5 == 0).sum()
@@ -371,4 +373,150 @@ pub fn prob60() -> usize {
         }
     }
     curr_min
+}
+
+fn poly_wrapper(sides: usize, n: usize, map: &mut [HashMap<usize, usize>; 6]) -> usize {
+    match map[sides - 3].get(&n) {
+        None => {
+            let x = polygonal(sides, n);
+            map[sides - 3].insert(n, x);
+            x
+        }
+        Some(x) => *x,
+    }
+}
+
+pub fn prob61_brute_force() -> usize {
+    let mut maps: Vec<HashSet<usize>> = (3..=8)
+                                        .map(|_| HashSet::new())
+                                        .collect();
+    let mut n = 1;
+    let mut start = false;
+    let mut cont = true;
+    while cont {
+        cont = false;
+        for i in 3..=8 {
+            let pol = polygonal(i, n);
+            if 1000 <= pol && pol <= 9999 {
+                start = true;
+                maps[i - 3].insert(pol);
+                cont = true;
+            }
+        }
+        if !start {
+            cont = true;
+        }
+        n += 1;
+    }
+
+    let mut ends: HashMap<usize, (usize, usize)> = HashMap::new();
+    for &a in maps[]
+    
+    for &a in maps[0].iter() {
+        for &b in maps[1].iter() {
+            if a == b {
+                continue;
+            }
+            for &c in maps[2].iter() {
+                if a == c || b == c {
+                    continue;
+                }
+                for &d in maps[3].iter() {
+                    if d == a || d == b || d == c {
+                        continue;
+                    }
+                    for &e in maps[4].iter() {
+                        if e == d || e == c || e == b || e == a {
+                            continue;
+                        }
+                        for &f in maps[5].iter() {
+                            if f == e || f == d || f == e || f == b || f == a {
+                                continue;
+                            }
+                            let vec = vec![a, b, c, d, e, f];
+                            for perm in vec.iter().permutations(vec.len()) {
+                                let mut t = true;
+                                for i in 0..5 {
+                                    if perm[i] % 100 != perm[i + 1] / 100 {
+                                        t = false;
+                                        break;
+                                    }
+                                }
+                                if t {
+                                    return vec.iter().sum();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    0
+}
+
+pub fn prob61() -> usize {
+    let mut maps: Vec<HashSet<usize>> = (3..=8)
+                                        .map(|_| HashSet::new())
+                                        .collect();
+    let mut n = 1;
+    let mut start = false;
+    let mut cont = true;
+    while cont {
+        cont = false;
+        for i in 3..=8 {
+            let pol = polygonal(i, n);
+            if 1000 <= pol && pol <= 9999 {
+                start = true;
+                maps[i - 3].insert(pol);
+                cont = true;
+            }
+        }
+        if !start {
+            cont = true;
+        }
+        n += 1;
+    }
+    
+    for &a in maps[0].iter() {
+        for &b in maps[1].iter() {
+            if a == b {
+                continue;
+            }
+            for &c in maps[2].iter() {
+                if a == c || b == c {
+                    continue;
+                }
+                for &d in maps[3].iter() {
+                    if d == a || d == b || d == c {
+                        continue;
+                    }
+                    for &e in maps[4].iter() {
+                        if e == d || e == c || e == b || e == a {
+                            continue;
+                        }
+                        for &f in maps[5].iter() {
+                            if f == e || f == d || f == e || f == b || f == a {
+                                continue;
+                            }
+                            let vec = vec![a, b, c, d, e, f];
+                            for perm in vec.iter().permutations(vec.len()) {
+                                let mut t = true;
+                                for i in 0..5 {
+                                    if perm[i] % 100 != perm[i + 1] / 100 {
+                                        t = false;
+                                        break;
+                                    }
+                                }
+                                if t {
+                                    return vec.iter().sum();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    0
 }
