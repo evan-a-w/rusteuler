@@ -386,136 +386,77 @@ fn poly_wrapper(sides: usize, n: usize, map: &mut [HashMap<usize, usize>; 6]) ->
     }
 }
 
-pub fn prob61_brute_force() -> usize {
-    let mut maps: Vec<HashSet<usize>> = (3..=8)
-                                        .map(|_| HashSet::new())
-                                        .collect();
-    let mut n = 1;
-    let mut start = false;
-    let mut cont = true;
-    while cont {
-        cont = false;
-        for i in 3..=8 {
-            let pol = polygonal(i, n);
-            if 1000 <= pol && pol <= 9999 {
-                start = true;
-                maps[i - 3].insert(pol);
-                cont = true;
-            }
+pub fn next_61(s: usize, num: usize
+              , curr_sides:   &mut Vec<usize>
+              , curr_nums:    &mut Vec<usize>
+              , end_start:    &HashMap<usize, HashSet<(usize, usize)>>) 
+    -> usize {
+    if curr_sides.len() == 6 {
+        if curr_nums[0] / 100 == curr_nums[5] % 100 {
+            return curr_nums.iter().sum();
+        } else {
+            return 0;
         }
-        if !start {
-            cont = true;
-        }
-        n += 1;
     }
-
-    let mut ends: HashMap<usize, (usize, usize)> = HashMap::new();
-    for &a in maps[]
-    
-    for &a in maps[0].iter() {
-        for &b in maps[1].iter() {
-            if a == b {
-                continue;
-            }
-            for &c in maps[2].iter() {
-                if a == c || b == c {
-                    continue;
+    if let Some(entry) = end_start.get(&(num % 100)) {
+        for &(s2, num2) in entry.iter() {
+            if !curr_nums.contains(&num2) && !curr_sides.contains(&s2) {
+                curr_nums.push(num2);
+                curr_sides.push(s2);
+                let res = next_61(s2, num2, curr_sides, curr_nums, end_start);
+                if res != 0 {
+                    return res;
                 }
-                for &d in maps[3].iter() {
-                    if d == a || d == b || d == c {
-                        continue;
-                    }
-                    for &e in maps[4].iter() {
-                        if e == d || e == c || e == b || e == a {
-                            continue;
-                        }
-                        for &f in maps[5].iter() {
-                            if f == e || f == d || f == e || f == b || f == a {
-                                continue;
-                            }
-                            let vec = vec![a, b, c, d, e, f];
-                            for perm in vec.iter().permutations(vec.len()) {
-                                let mut t = true;
-                                for i in 0..5 {
-                                    if perm[i] % 100 != perm[i + 1] / 100 {
-                                        t = false;
-                                        break;
-                                    }
-                                }
-                                if t {
-                                    return vec.iter().sum();
-                                }
-                            }
-                        }
-                    }
-                }
+                curr_nums.pop();
+                curr_sides.pop();
             }
         }
     }
     0
 }
 
+// 0.00s release
 pub fn prob61() -> usize {
-    let mut maps: Vec<HashSet<usize>> = (3..=8)
-                                        .map(|_| HashSet::new())
-                                        .collect();
+    let mut polys: HashSet<(usize, usize)> = HashSet::new();
+    let mut started = false;
     let mut n = 1;
-    let mut start = false;
-    let mut cont = true;
-    while cont {
-        cont = false;
+    loop {
+        let mut added = false;
         for i in 3..=8 {
-            let pol = polygonal(i, n);
-            if 1000 <= pol && pol <= 9999 {
-                start = true;
-                maps[i - 3].insert(pol);
-                cont = true;
+            let curr = polygonal(i, n);
+            println!("{}, {}: {}", i, n, curr);
+            if curr >= 1000 && 9999 >= curr {
+                started = true;
+                added = true;
+                polys.insert((i, curr));
             }
         }
-        if !start {
-            cont = true;
+        if started && !added {
+            break;
         }
         n += 1;
     }
-    
-    for &a in maps[0].iter() {
-        for &b in maps[1].iter() {
-            if a == b {
-                continue;
-            }
-            for &c in maps[2].iter() {
-                if a == c || b == c {
-                    continue;
+
+    let mut end_start: HashMap<usize, HashSet<(usize, usize)>> = HashMap::new();
+    for &(_, num) in polys.iter() {
+        let end = num % 100;
+        if !end_start.contains_key(&end) {
+            let mut ends = HashSet::new();
+            for &(s, i) in polys.iter() {
+                if i / 100 == end {
+                    ends.insert((s, i)); 
                 }
-                for &d in maps[3].iter() {
-                    if d == a || d == b || d == c {
-                        continue;
-                    }
-                    for &e in maps[4].iter() {
-                        if e == d || e == c || e == b || e == a {
-                            continue;
-                        }
-                        for &f in maps[5].iter() {
-                            if f == e || f == d || f == e || f == b || f == a {
-                                continue;
-                            }
-                            let vec = vec![a, b, c, d, e, f];
-                            for perm in vec.iter().permutations(vec.len()) {
-                                let mut t = true;
-                                for i in 0..5 {
-                                    if perm[i] % 100 != perm[i + 1] / 100 {
-                                        t = false;
-                                        break;
-                                    }
-                                }
-                                if t {
-                                    return vec.iter().sum();
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            } 
+            end_start.insert(end, ends);
+        }
+    }
+
+    for &(s, num) in polys.iter() {
+        let mut curr_nums = vec![num];
+        let mut curr_sides = vec![s];
+        let res = next_61(s, num, &mut curr_sides, &mut curr_nums, &end_start);
+        if res != 0 {
+            return res;
         }
     }
     0
